@@ -89,7 +89,13 @@ sorted(fp)
 Beers
 
 """
-import re
+
+logm = linear_model.LogisticRegression()
+
+def score(input, response):
+  logm.fit(input, response)
+  score = logm.score(input, good)
+  print 'R^2 Score : %.03f' % (score)
 
 def good(x):
   if x > 4.3:
@@ -99,30 +105,32 @@ def good(x):
 
 url = 'http://www-958.ibm.com/software/analytics/manyeyes/datasets/af-er-beer-dataset/versions/1.txt'
 
-logm = linear_model.LogisticRegression()
-
 beer = pd.read_csv(url, delimiter="\t")
 beer = beer.dropna()
 beer['Good'] = beer['WR'].apply(good)
 
+# Original attempt
+
 input = beer[ ['Reviews', 'ABV'] ].values
 good = beer['Good'].values
 
-logm.fit(input, good)
-logm.predict(input)
-logm.score(input, good)
+score(input, good)
+
+# Second attempt, with beer types
 
 beer_types = ['Ale', 'Stout', 'IPA', 'Lager']
 
 for t in beer_types:
-	beer[t] = beer['Name'].str.contains(t) * 1
+	beer[t] = beer['Type'].str.contains(t) * 1
 
-input = beer[ ['Reviews', 'ABV', 'Ale', 'Stout', 'IPA', 'Lager'] ].values
+select = ['Reviews', 'ABV', 'Ale', 'Stout', 'IPA', 'Lager']
+input = beer[select].values
 
-fp_value = feature_selection.univariate_selection.f_regression(input, y)
+score(input, good)
 
-input = beer[['ABV', 'Ale', 'Stout']].values
+# Third attempt, with beer breweries
 
-logm.fit(input, good)
-logm.predict(input)
-logm.score(input, good)
+dummies = pd.get_dummies(beer['Brewery'])
+input = beer[select].join(dummies.ix[:, 1:])
+
+score(input, good)
