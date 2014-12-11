@@ -2,6 +2,7 @@
 
 """
 pip install csc-pysparse networkx divisi2
+git clone https://github.com/ocelma/python-recsys.git recsys
 cd recsys
 python setup.py install
 """
